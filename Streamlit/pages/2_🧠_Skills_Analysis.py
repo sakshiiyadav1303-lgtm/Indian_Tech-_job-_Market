@@ -27,16 +27,9 @@ st.markdown("---")
 df = load_data()
 
 # ---------------------------------------
-# Convert Skills Column into List
+# Create One Row Per Skill
 # ---------------------------------------
 
-df["skills_required"] = (
-    df["skills_required"]
-    .fillna("")
-    .astype(str)
-)
-
-# Create one row per skill
 skills = (
     df.assign(
         skill=df["skills_required"].str.split(",")
@@ -44,12 +37,108 @@ skills = (
     .explode("skill")
 )
 
-skills["skill"] = skills["skill"].str.strip()
+# Clean skill names
+skills["skill"] = (
+    skills["skill"]
+    .fillna("")
+    .astype(str)
+    .str.strip()
+    .str.lower()
+)
 
+# Remove empty skills
 skills = skills[
     skills["skill"] != ""
 ]
 
+# Standardize common skill names
+skill_mapping = {
+
+    # Python
+    "python": "Python",
+    "python3": "Python",
+    "python programming": "Python",
+
+    # SQL
+    "sql": "SQL",
+    "mysql": "SQL",
+    "postgresql": "SQL",
+    "sql server": "SQL",
+
+    # Machine Learning
+    "ml": "Machine Learning",
+    "machine learning": "Machine Learning",
+
+    # Artificial Intelligence
+    "ai": "Artificial Intelligence",
+    "artificial intelligence": "Artificial Intelligence",
+
+    # Deep Learning
+    "deep learning": "Deep Learning",
+
+    # Data Analysis
+    "analytics": "Data Analysis",
+    "analytical": "Data Analysis",
+    "analysis": "Data Analysis",
+    "analysing": "Data Analysis",
+    "analyzing": "Data Analysis",
+    "data": "Data Analysis",
+    "data analysis": "Data Analysis",
+
+    # Data Engineering
+    "data engineering": "Data Engineering",
+
+    # Business Analysis
+    "business analysis": "Business Analysis",
+    "business analyst": "Business Analysis",
+
+    # Visualization
+    "power bi": "Power BI",
+    "powerbi": "Power BI",
+    "tableau": "Tableau",
+
+    # Cloud
+    "aws": "AWS",
+    "amazon web services": "AWS",
+    "azure": "Azure",
+    "gcp": "GCP",
+    "google cloud": "GCP",
+
+    # Excel
+    "excel": "Excel",
+    "ms excel": "Excel",
+    "microsoft excel": "Excel",
+
+    # Programming
+    "java": "Java",
+    "javascript": "JavaScript",
+    "c++": "C++",
+    "c#": "C#",
+    "html": "HTML",
+    "css": "CSS",
+
+    # Version Control
+    "git": "Git",
+    "github": "GitHub",
+
+    # Soft Skills
+    "communication": "Communication",
+    "problem solving": "Problem Solving",
+    "leadership": "Leadership",
+    "teamwork": "Teamwork",
+
+    # Other
+    "agile": "Agile",
+    "automation": "Automation",
+    "computer science": "Computer Science"
+}
+
+skills["skill"] = skills["skill"].replace(skill_mapping)
+
+# Convert remaining skills to Title Case
+skills["skill"] = skills["skill"].apply(
+    lambda x: skill_mapping.get(x.lower(), x.title())
+)
 # ---------------------------------------
 # Sidebar Filters
 # ---------------------------------------
